@@ -4,62 +4,73 @@ import org.jsoup.nodes.*;
 import org.jsoup.safety.Whitelist;
 public class Client {
 
-    private static final int TESTNUM = 100;
+    private static final int TESTNUM = 50;
 
     public static void creation(FuzzingService service){
-        //single modification
-        System.out.println("-------- creation begin ----------");
+
+        System.out.println("-------- each loop with a single modification  ----------");
         for (int i = 0; i < TESTNUM; ++i){
             try {
-                String htmlstr = "<html><head><title>CS603 HW2</title></head><body>" +
+                String htmlstr = "<html>" +
+                        "<head><title>CS603 HW2</title></head><body>" +
+                        "<div>" +
                         "<p id = \"1\">Sentence 1.</p> " +
                         "<p id = \"2\">Sentence 2.</p> " +
+                        "<img src = \"./picture1.jpg\">" +
+                        "</img>" +
+                        "</div>" +
                         "</body></html>";
-                Document doc = Jsoup.parse(htmlstr);
-                System.out.println("Before fuzz single modification");
-                System.out.println(doc.title());
-                service.singleModification(htmlstr);
-                doc = Jsoup.parse(htmlstr);
-                System.out.println("After fuzz single modification");
-                System.out.println(doc.title());
+                //Document doc = Jsoup.parse(htmlstr);
 
-                System.out.println("---------------------------------");
+                //System.out.println(doc.title());
+                service.singleModification(htmlstr);
+                System.out.println("single modification : " + i);
+                //doc = Jsoup.parse(htmlstr);
             }catch(Exception e){
                 e.getStackTrace();
             }
         }
 
-        //combined modification
+        System.out.println("-------- each loop with a combined modification  ----------");
         for (int i = 0; i < TESTNUM; ++i){
             try {
-                String htmlstr = "<html><head><title>First parse</title></head>" + "<body><p>Parsed HTML into a doc.</p></body></html>";
+                String htmlstr = "<html>" +
+                        "<head><title>CS603 HW2</title></head><body>" +
+                        "<div>" +
+                        "<p id = \"1\">Sentence 1.</p> " +
+                        "<p id = \"2\">Sentence 2.</p> " +
+                        "<img src = \"./picture1.jpg\">" +
+                        "</img>" +
+                        "</div>" +
+                        "</body></html>";
                 service.combinedModification(htmlstr);
-                Document doc = Jsoup.parse(htmlstr);
+                System.out.println("combined modification : " + i);
             }catch(Exception e){
                 e.getStackTrace();
             }
         }
     }
 
-    public static void TestClean(FuzzingService service){
-        System.out.println("-------- clean begin  ----------");
-        for (int i = 0; i < TESTNUM; ++i){
+    public static void clean(FuzzingService service){
             try {
-                String unsafe = "<p><a id = \"1\" href='/photo.jpg'>picture</a></p>";
-                service.insertHTML(unsafe);
-                String safe = Jsoup.clean(unsafe, Whitelist.basic());
-                Document cleaned = Jsoup.parse(safe);
+                System.out.println("-------- before clean  ----------");
+                String src = "<p><a id = \"1\" href='/photo.jpg'>picture</a></p>";
+                System.out.println(src);
+                service.insertHTML(src);
+                String target = Jsoup.clean(src, Whitelist.basic());
+                Document cleaned = Jsoup.parse(target);
                 Element url = cleaned.getElementById("1");
-                System.out.println(url);
+                System.out.println("-------- after begin  ----------");
+                System.out.println(target);
             }catch(Exception e){
                 e.getStackTrace();
             }
-        }
+
     }
     public static void main(String[] args) {
         FuzzingService fuzzService = FuzzingService.getInstance();
         creation(fuzzService);
-        TestClean(fuzzService);
+        clean(fuzzService);
     }
 
 }

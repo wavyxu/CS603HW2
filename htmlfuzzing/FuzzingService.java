@@ -6,7 +6,6 @@ import java.util.*;
 public class FuzzingService {
     private static FuzzingService service;
     private ServiceLoader<Fuzzer> loader;
-    private static final int combinedNum = 3;
     private List<String> services;
 
     private FuzzingService() {
@@ -60,30 +59,27 @@ public class FuzzingService {
     }
 
     public void singleModification(String htmlstr){
-        Fuzzer remove = getTagRemover();
-        Fuzzer replace = getTagReplacer();
-        Fuzzer[] ObjArray = {remove, replace};
-        Random rand = new Random();
-        int rdIndex = rand.nextInt(2);
-        ObjArray[rdIndex].fuzz(htmlstr);
-        //return ObjArray[rdIndex].fuzz(htmlstr);                 //randomly pick a ServiceProvider to run fuzz method.
-    }
+        Random idx = new Random();
 
-    public void combinedModification(String str){
-        Fuzzer remove = getTagRemover();
-        Fuzzer replace = getTagReplacer();
-        Fuzzer[] ObjArray = {remove, replace};
-        Random rand = new Random();
-        String res = str;
-        for (int i = 0; i < combinedNum; ++i) {
-            int rdIndex = rand.nextInt(2);
-            ObjArray[rdIndex].fuzz(res);             //randomly pick a ServiceProvider to run fuzz method.
+        if ((idx.nextInt(1000) & 1) == 0) {
+            Fuzzer fuzzer  = getTagRemover();
+            fuzzer.fuzz(htmlstr);
+        } else {
+            Fuzzer fuzzer = getTagReplacer();
+            fuzzer.fuzz(htmlstr);
         }
-        return ;
     }
 
-    public void insertHTML(String str){
+    public void combinedModification(String htmlstr){
+        Random count = new Random();
+        for (int i = 0; i < count.nextInt(10); i++) {
+            Fuzzer fuzzer = getTagReplacer();
+            fuzzer.fuzz(htmlstr);
+        }
 
-        getTagInserter().fuzz(str);
+    }
+
+    public void insertHTML(String htmlstr){
+        getTagInserter().fuzz(htmlstr);
     }
 }
